@@ -192,7 +192,8 @@ function gemerkteSimulation(hand, trumpf, verbleibendeKarten, wackelFarben) {
             }
             let g2Karte = gegnerBedientRegelkonform(gegner2, ausgespielteKarte.farbe, trumpf, ausgespielteKarte, aktuellHoechste);
 
-            if (ausgespielteKarte.farbe === trumpf) trumpfDraussenAnzahl = Math.max(0, trumpfDraussenAnzahl);
+            // KORREKTUR: Wenn Trumpf gespielt wird, verringert sich die Anzahl der Trümpfe draußen korrekt
+            if (ausgespielteKarte.farbe === trumpf) trumpfDraussenAnzahl = Math.max(0, trumpfDraussenAnzahl - 1);
             if (g1Karte && g1Karte.farbe === trumpf) trumpfDraussenAnzahl = Math.max(0, trumpfDraussenAnzahl - 1);
             if (g2Karte && g2Karte.farbe === trumpf) trumpfDraussenAnzahl = Math.max(0, trumpfDraussenAnzahl - 1);
 
@@ -201,11 +202,8 @@ function gemerkteSimulation(hand, trumpf, verbleibendeKarten, wackelFarben) {
             }
         }
 
-        let abzug = wackelFarben * 0.75;
-        if (hand[trumpf] && hand[trumpf].length < 6) {
-            abzug += 1.5;
-        }
-        let bereinigteStiche = Math.round(Math.max(0, sticheInDieserRunde - abzug));
+        // KORREKTUR: Künstliche pauschale Abzüge entfernt, da die Simulation das reale Spiel abbildet
+        let bereinigteStiche = sticheInDieserRunde; 
         
         gesamtStiche += bereinigteStiche;
         stichHistorie.push(bereinigteStiche);
@@ -284,16 +282,19 @@ function gegnerBedientRegelkonform(gegnerHand, ausgespielteFarbe, trumpf, startK
 
     let passende = gegnerHand.filter(c => c.farbe === ausgespielteFarbe);
     if (passende.length > 0) {
+        // Sortiere so, dass die schwächste Karte am Ende steht (für echtes Drüberstechen)
         if (zielKarte.farbe === ausgespielteFarbe) {
             let hoehere = passende.filter(c => c.power > zielKarte.power);
             if (hoehere.length > 0) {
+                // Nimm die kleinste Karte, die GERADE SO ausreicht, um zu gewinnen
                 hoehere.sort((a, b) => a.power - b.power);
                 let gewaehlt = hoehere[0];
                 gegnerHand.splice(gegnerHand.indexOf(gewaehlt), 1);
                 return gewaehlt;
             }
         }
-        passende.sort((a, b) => a.power - b.power);
+        // Wenn man nicht drüberstechen kann, wirf die SCHWÄCHSTE Karte ab (höchste Power-Zahl bedeutet schwächere Karte bei deiner Logik)
+        passende.sort((a, b) => b.power - a.power);
         let gewaehlt = passende[0];
         gegnerHand.splice(gegnerHand.indexOf(gewaehlt), 1);
         return gewaehlt;
@@ -319,7 +320,8 @@ function gegnerBedientRegelkonform(gegnerHand, ausgespielteFarbe, trumpf, startK
         }
     }
 
-    gegnerHand.sort((a, b) => a.power - b.power);
+    // Wenn man gar nichts Sinnvolles tun kann, wirf die absolut schwächste Karte ab
+    gegnerHand.sort((a, b) => b.power - a.power);
     return gegnerHand.shift();
 }
 
@@ -350,7 +352,9 @@ function gewinntStich(meine, g1, g2, trumpf) {
         maxPower = g1P; 
         gewinner = 'g1'; 
     }
+    // KORREKTUR: maxPower für g2 wird jetzt sauber aktualisiert!
     if (g2 && g2.farbe === meine.farbe && g2P > maxPower) { 
+        maxPower = g2P;
         gewinner = 'g2'; 
     }
 
