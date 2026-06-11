@@ -1,0 +1,21 @@
+{
+  "short_name": "BatakRechner",
+  "name": "Batak Taktik Rechner",
+  "icons": [
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#1a1a1a",
+  "theme_color": "#ff9f43",
+  "display": "standalone",
+  "orientation": "portrait"
+}
